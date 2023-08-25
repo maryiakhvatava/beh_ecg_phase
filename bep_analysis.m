@@ -194,29 +194,76 @@ correctrejection_eventMeanPhase_deg_session = correctrejection_eventMeanPhase_se
 eventMeanPhase_deg_session = eventMeanPhase_session * (180/pi);
 not_eventMeanPhase_deg_session = not_eventMeanPhase_session * (180/pi);
 
-% Performs O-tests for each trial type for 1 session fist in radians, then in degrees
-circ_otest1_session = circ_otest(hit_eventPhase,1);
-circ_otest2_session = circ_otest(miss_eventPhase,1);
-circ_otest3_session = circ_otest(correctrejection_eventPhase,1);
-circ_otest4_session = circ_otest(falsealarm_eventPhase,1);
-circ_otest5_session = circ_otest(eventPhase,1);
-circ_otest6_session = circ_otest(not_eventPhase,1);
 
-% Display o-tests and mean phases for each session
-    all_hit_eventMeanPhases = [all_hit_eventMeanPhases; hit_eventMeanPhase_deg_session];
-    all_miss_eventMeanPhases = [all_miss_eventMeanPhases; miss_eventMeanPhase_deg_session];
-    all_correctrejection_eventMeanPhases = [all_correctrejection_eventMeanPhases; correctrejection_eventMeanPhase_deg_session];
-    all_falsealarm_eventMeanPhases = [all_falsealarm_eventMeanPhases; falsealarm_eventMeanPhase_deg_session];
-    all_eventMeanPhases = [all_eventMeanPhases; eventMeanPhase_deg_session];
-    all_not_eventMeanPhases = [all_not_eventMeanPhases; not_eventMeanPhase_deg_session];
-
-    all_circ_otest1_results = [all_circ_otest1_results; circ_otest1_session];
-    all_circ_otest2_results = [all_circ_otest2_results; circ_otest2_session];
-    all_circ_otest3_results = [all_circ_otest3_results; circ_otest3_session];
-    all_circ_otest4_results = [all_circ_otest4_results; circ_otest4_session];
-    all_circ_otest5_results = [all_circ_otest5_results; circ_otest5_session];
-    all_circ_otest6_results = [all_circ_otest6_results; circ_otest6_session];
+    all_hit_eventMeanPhases = [all_hit_eventMeanPhases; hit_eventMeanPhase_session];
+    all_miss_eventMeanPhases = [all_miss_eventMeanPhases; miss_eventMeanPhase_session];
+    all_correctrejection_eventMeanPhases = [all_correctrejection_eventMeanPhases; correctrejection_eventMeanPhase_session];
+    all_falsealarm_eventMeanPhases = [all_falsealarm_eventMeanPhases; falsealarm_eventMeanPhase_session];
+    all_eventMeanPhases = [all_eventMeanPhases; eventMeanPhase_session];
+    all_not_eventMeanPhases = [all_not_eventMeanPhases; not_eventMeanPhase_session];
     end
+circ_otest1_sessions = circ_otest(all_hit_eventMeanPhases,1);
+circ_otest2_sessions = circ_otest(all_miss_eventMeanPhases,1);
+circ_otest3_sessions = circ_otest(all_correctrejection_eventMeanPhases,1);
+circ_otest4_sessions = circ_otest(all_falsealarm_eventMeanPhases,1);
+circ_otest5_sessions = circ_otest(all_eventMeanPhases,1);
+circ_otest6_sessions = circ_otest(all_not_eventMeanPhases,1); 
+    
+figure;
+subplot(2, 3, 1);
+if ~isempty(all_hit_eventMeanPhases)
+    polar(all_hit_eventMeanPhases, ones(size(all_hit_eventMeanPhases)), 'ro'); 
+    title('Hit');
+    hold on
+axis equal;
+hold off
+end
+subplot(2, 3, 2);
+if ~isempty(all_miss_eventMeanPhases)
+polar(all_miss_eventMeanPhases, ones(size(all_miss_eventMeanPhases)), 'ro'); 
+    title('Miss');
+    hold on
+axis equal;
+hold off
+end
+
+subplot(2, 3, 3);
+if ~isempty(all_correctrejection_eventMeanPhases)
+polar(all_correctrejection_eventMeanPhases, ones(size(all_correctrejection_eventMeanPhases)), 'ro'); 
+    title('Correct rejection');
+    hold on
+axis equal;
+hold off
+end
+
+subplot(2, 3, 4);
+if ~isempty(all_falsealarm_eventMeanPhases)
+polar(all_falsealarm_eventMeanPhases, ones(size(all_falsealarm_eventMeanPhases)), 'ro'); 
+    title('False alarms');
+    hold on
+axis equal;
+hold off
+end
+
+subplot(2, 3, 5);
+if ~isempty(all_eventMeanPhases)
+polar(all_eventMeanPhases, ones(size(all_eventMeanPhases)), 'ro'); 
+    title('Completed');
+    hold on
+axis equal;
+hold off
+end
+
+subplot(2, 3, 6);
+if ~isempty(all_not_eventMeanPhases)
+polar(all_not_eventMeanPhases, ones(size(all_not_eventMeanPhases)), 'ro'); 
+    title('Not completed');
+    hold on
+    axis equal;
+    hold off
+end
+
+
 disp('Hit Event Mean Phases for sessions:');
 disp(all_hit_eventMeanPhases);
 
@@ -236,22 +283,23 @@ disp('All Not Completed Event Mean Phases for sessions:');
 disp(all_not_eventMeanPhases);
 
 disp('Hit O-tests for sessions:');
-disp(all_circ_otest1_results);
+disp(circ_otest1_sessions);
 
 disp('All Miss O-tests for sessions:');
-disp(all_circ_otest2_results);
+disp(circ_otest2_sessions);
 
 disp('All Correct Rejection O-tests for sessions:');
-disp(all_circ_otest3_results);
+disp(circ_otest3_sessions);
 
 disp('All False alarms O-tests for sessions:');
-disp(all_circ_otest4_results);
+disp(circ_otest4_sessions);
 
 disp('All Completed O-tests for sessions:');
-disp(all_circ_otest5_results);
+disp(circ_otest5_sessions);
 
 disp('All Not Completed O-tests for sessions:');
-disp(all_circ_otest6_results);
+disp(circ_otest6_sessions);
+
 
 % Store event phases, means and o-tests for sessions all together 
 eventPhase_all = horzcat(eventPhase_cell{:});

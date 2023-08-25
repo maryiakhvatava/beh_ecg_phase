@@ -1,6 +1,7 @@
 function[dateStrings1, dateStrings2] = analysis(dateStrings1, dateStrings2)
 tic
 numDates = numel(dateStrings);
+% eg. dateStrings1 = ['20230511', '20230518', etc], dateStrings2 = ['2023-05-11', '2023-05-18'] 
 hit_eventPhase_cell = {};
 miss_eventPhase_cell = {};
 falsealarm_eventPhase_cell = {};

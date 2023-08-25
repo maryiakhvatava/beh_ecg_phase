@@ -1,4 +1,4 @@
-function analysis(dateStrings)
+function[dateStrings1, dateStrings2] = analysis(dateStrings1, dateStrings2)
 tic
 numDates = numel(dateStrings);
 hit_eventPhase_cell = {};
@@ -13,19 +13,19 @@ all_correctrejection_eventMeanPhases = [];
 all_falsealarm_eventMeanPhases = [];
 all_eventMeanPhases = [];
 all_not_eventMeanPhases = [];
-
 all_circ_otest1_results = [];
 all_circ_otest2_results = [];
 all_circ_otest3_results = [];
 all_circ_otest4_results = [];
 all_circ_otest5_results = [];
 all_circ_otest6_results = [];
-%   a = 'Y:\Projects\Pulv_bodysignal\Magnus_SDT\';
+a = 'Y:\Projects\Pulv_bodysignal\Magnus_SDT\';
     for num = 1:numDates 
-dateString = dateStrings{num};
-ecgFilename = [ dateString '_ecg.mat'];
+dateString1 = dateStrings1{num};
+ecgFilename = [a dateString1 '_ecg.mat'];
 ecg = load(ecgFilename);
-filePattern = [ 'Magcombined' dateString '*.mat'];
+dateString2 = dateStrings2{num};
+filePattern = [a 'Magcombined' dateString '*.mat'];
 fileList = dir(filePattern);
 numFiles = numel(fileList);
 Magcombined = cell(1, numFiles);

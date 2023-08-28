@@ -7,3 +7,4 @@ This code 1) plots events times of hits, misses, false alarms and correct reject
 
 
           The code uses circ_mean.m, ig_rose.m and testsim_dprime.m
+          I changed ig_rose a bit, cause it didn't work on matlab2014, so I attached this also just in case. 

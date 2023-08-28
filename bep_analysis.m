@@ -1,6 +1,6 @@
 function analysis(dateStrings1, dateStrings2)
 tic
-numDates = numel(dateStrings);
+numDates = numel(dateStrings1);
 % input example: dateStrings1 = ['20230511', '20230518', etc], dateStrings2 = ['2023-05-11', '2023-05-18', etc] 
 hit_eventPhase_cell = {};
 miss_eventPhase_cell = {};
@@ -20,6 +20,12 @@ all_circ_otest3_results = [];
 all_circ_otest4_results = [];
 all_circ_otest5_results = [];
 all_circ_otest6_results = [];
+all_hit_eventMeanPhases_deg = [];
+all_miss_eventMeanPhases_deg = [];
+all_correctrejection_eventMeanPhases_deg = [];
+all_falsealarm_eventMeanPhases_deg = [];
+all_eventMeanPhases_deg = [];
+all_not_eventMeanPhases_deg = [];
 % loading files
 a = 'Y:\Projects\Pulv_bodysignal\Magnus_SDT\';
     for num = 1:numDates 
@@ -27,7 +33,7 @@ dateString1 = dateStrings1{num};
 ecgFilename = [a dateString1 '_ecg.mat'];
 ecg = load(ecgFilename);
 dateString2 = dateStrings2{num};
-filePattern = [a 'Magcombined' dateString '*.mat'];
+filePattern = [a 'Magcombined' dateString2 '*.mat'];
 fileList = dir(filePattern);
 numFiles = numel(fileList);
 Magcombined = cell(1, numFiles);
@@ -77,18 +83,18 @@ for i = 1:numFiles
 end
 completed_trials_array = struct2array(completed_trials_struct);
 noncompleted_trials_array = struct2array(noncompleted_trials_struct);
+event_times = cell(1, numel(completed_trials_array));
+not_event_times1 = cell(1, numel(noncompleted_trials_array));
 hit_trials = struct2array(hit_trials_struct);
 miss_trials = struct2array(miss_trials_struct);
 falsealarm_trials = struct2array(falsealarm_trials_struct);
 correctrejection_trials = struct2array(correctrejection_trials_struct);
 
-% storing event times for every trial type in a cell structure
-event_times = cell(1, numel(completed_trials_array));
-not_event_times1 = cell(1, numel(noncompleted_trials_array));
 hit_event_times = zeros(numel(hit_trials), 1);
 miss_event_times = zeros(numel(miss_trials), 1);
 correctrejection_event_times = zeros(numel(correctrejection_trials), 1);
 falsealarm_event_times = zeros(numel(falsealarm_trials), 1);
+
 
 for q = 1:numel(completed_trials_array)
     event_times{q} = completed_trials_array(q).TDT_state_onsets_aligned_to_1st_INI;
@@ -123,8 +129,6 @@ end
 for r = 1:numel(falsealarm_trials)
     falsealarm_event_times(r) = event_times{r}(1, 1);
 end
-
-% Calculate cycle duration and the phase of every event for each trial type
 for l = 1:size(blockId,1)
     n(l) = blockId(l);
     idx = n(l);
@@ -172,7 +176,6 @@ correctrejection_eventPhase_cell{end+1} = correctrejection_eventPhase;
 eventPhase_cell{end+1} = eventPhase;
 not_eventPhase_cell{end+1} = not_eventPhase; 
 
-% Calculate event mean phase for each trial type for 1 session fist in radians, then in degrees
 hit_eventMeanPhase_session = circ_mean(hit_eventPhase');
 miss_eventMeanPhase_session = circ_mean(miss_eventPhase');
 falsealarm_eventMeanPhase_session = circ_mean(falsealarm_eventPhase');
@@ -194,21 +197,28 @@ correctrejection_eventMeanPhase_deg_session = correctrejection_eventMeanPhase_se
 eventMeanPhase_deg_session = eventMeanPhase_session * (180/pi);
 not_eventMeanPhase_deg_session = not_eventMeanPhase_session * (180/pi);
 
-
     all_hit_eventMeanPhases = [all_hit_eventMeanPhases; hit_eventMeanPhase_session];
     all_miss_eventMeanPhases = [all_miss_eventMeanPhases; miss_eventMeanPhase_session];
     all_correctrejection_eventMeanPhases = [all_correctrejection_eventMeanPhases; correctrejection_eventMeanPhase_session];
     all_falsealarm_eventMeanPhases = [all_falsealarm_eventMeanPhases; falsealarm_eventMeanPhase_session];
     all_eventMeanPhases = [all_eventMeanPhases; eventMeanPhase_session];
     all_not_eventMeanPhases = [all_not_eventMeanPhases; not_eventMeanPhase_session];
+    
+    all_hit_eventMeanPhases_deg = [all_hit_eventMeanPhases_deg; hit_eventMeanPhase_deg_session];
+    all_miss_eventMeanPhases_deg = [all_miss_eventMeanPhases_deg; miss_eventMeanPhase_deg_session];
+    all_correctrejection_eventMeanPhases_deg = [all_correctrejection_eventMeanPhases_deg; correctrejection_eventMeanPhase_deg_session];
+    all_falsealarm_eventMeanPhases_deg = [all_falsealarm_eventMeanPhases_deg; falsealarm_eventMeanPhase_deg_session];
+    all_eventMeanPhases_deg = [all_eventMeanPhases_deg; eventMeanPhase_deg_session];
+    all_not_eventMeanPhases_deg = [all_not_eventMeanPhases_deg; not_eventMeanPhase_deg_session];
     end
+    
 circ_otest1_sessions = circ_otest(all_hit_eventMeanPhases,1);
 circ_otest2_sessions = circ_otest(all_miss_eventMeanPhases,1);
 circ_otest3_sessions = circ_otest(all_correctrejection_eventMeanPhases,1);
 circ_otest4_sessions = circ_otest(all_falsealarm_eventMeanPhases,1);
 circ_otest5_sessions = circ_otest(all_eventMeanPhases,1);
 circ_otest6_sessions = circ_otest(all_not_eventMeanPhases,1); 
-    
+
 figure;
 subplot(2, 3, 1);
 if ~isempty(all_hit_eventMeanPhases)
@@ -263,24 +273,35 @@ polar(all_not_eventMeanPhases, ones(size(all_not_eventMeanPhases)), 'ro');
     hold off
 end
 
+ total = sum(all_hit_eventMeanPhases_deg);
+    mean1 = total / length(all_hit_eventMeanPhases_deg);
+disp('Hit Event Mean Phases for all sessions:');
+disp(mean1);
 
-disp('Hit Event Mean Phases for sessions:');
-disp(all_hit_eventMeanPhases);
+ total = sum(all_miss_eventMeanPhases_deg);
+    mean2 = total / length(all_miss_eventMeanPhases_deg);
+disp('Miss Event Mean Phases for all sessions:');
+disp(mean2);
 
-disp('All Miss Event Mean Phases for sessions:');
-disp(all_miss_eventMeanPhases);
+ total = sum(all_correctrejection_eventMeanPhases_deg);
+    mean3 = total / length(all_correctrejection_eventMeanPhases_deg);
+disp('Correct rejections Event Mean Phases for all sessions:');
+disp(mean3);
 
-disp('All Correct Rejection Event Mean Phases for sessions:');
-disp(all_correctrejection_eventMeanPhases);
+total = sum(all_falsealarm_eventMeanPhases_deg);
+    mean4 = total / length(all_falsealarm_eventMeanPhases_deg);
+disp('False alarm Event Mean Phases for all sessions:');
+disp(mean4);
 
-disp('All False alarms Event Mean Phases for sessions:');
-disp(all_falsealarm_eventMeanPhases);
-
+total = sum(all_eventMeanPhases_deg);
+    mean6 = total / length(all_eventMeanPhases_deg);
 disp('All Completed Event Mean Phases for sessions:');
-disp(all_eventMeanPhases);
+disp(mean6);
 
+total = sum(all_not_eventMeanPhases_deg);
+    mean7 = total / length(all_not_eventMeanPhases_deg);
 disp('All Not Completed Event Mean Phases for sessions:');
-disp(all_not_eventMeanPhases);
+disp(mean7);
 
 disp('Hit O-tests for sessions:');
 disp(circ_otest1_sessions);
@@ -300,8 +321,6 @@ disp(circ_otest5_sessions);
 disp('All Not Completed O-tests for sessions:');
 disp(circ_otest6_sessions);
 
-
-% Store event phases, means and o-tests for sessions all together 
 eventPhase_all = horzcat(eventPhase_cell{:});
 not_eventPhase_all = horzcat(not_eventPhase_cell{:});   
 hit_eventPhase_all = horzcat(hit_eventPhase_cell{:});
@@ -309,7 +328,6 @@ miss_eventPhase_all = horzcat(miss_eventPhase_cell{:});
 falsealarm_eventPhase_all = horzcat(falsealarm_eventPhase_cell{:});
 correctrejection_eventPhase_all = horzcat(correctrejection_eventPhase_cell{:});
 
-% Count the strenth of vector
 hit_eventMeanPhase = circ_mean(hit_eventPhase_all');
 hit_mean_length = circ_r(hit_eventPhase_all')*100;
 hit_x_end = hit_mean_length * cos(hit_eventMeanPhase);
@@ -354,7 +372,7 @@ correctrejection_total_count = numel(correctrejection_eventPhase_all);
 total_count = numel(eventPhase_all);
 not_total_count = numel(not_eventPhase_all);
 
-% Plot rose plots (in percents) for each trial type and completed and not completed trials
+figure;
 subplot(2, 2, 1);
 if ~isempty(hit_eventPhase_all)
     ig_rose(hit_eventPhase_all, 20, true); 
@@ -399,7 +417,7 @@ if ~isempty(correctrejection_eventPhase_all)
 end
 spacing = 1;
 
-figure
+figure;
 subplot(1, 2, 1);
 if ~isempty(eventPhase_all)
     ig_rose(eventPhase_all, 20, true); 
@@ -421,7 +439,6 @@ if ~isempty(not_eventPhase_all)
     hold off;
 end
 
-% Count and display means, o-tests and Rayleigh test values for all trials
 hit_eventMeanPhase_deg = hit_eventMeanPhase * (180/pi);
 miss_eventMeanPhase_deg = miss_eventMeanPhase * (180/pi);
 falsealarm_eventMeanPhase_deg = falsealarm_eventMeanPhase * (180/pi);
@@ -463,7 +480,6 @@ fprintf('Not completed: %.4f\n', h3);
 fprintf('Correct rejections: %.4f\n', h4);
 [h5, p5] = circ_rtest(falsealarm_eventPhase_all);
 fprintf('False alarms: %.4f\n', h5);
-% Count d-prime and criterion for all trials
 total_trials = numel(eventPhase_all);
 fprintf('Number of completed trials: %d\n', total_trials);
 pHit = numel(hit_eventPhase_all) / total_trials;

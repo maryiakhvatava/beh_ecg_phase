@@ -114,20 +114,32 @@ for ne1 = 1:numElements2
     not_event_times(ne1) = not_event_times1{ne1}(1,1); 
 end
 
-for l = 1:numel(hit_trials)
-    hit_event_times(l) = event_times{l}(1, 1);
+for l1 = 1:numel(hit_trials)
+    hit_event_times1{l1} = hit_trials(l1).TDT_state_onsets_aligned_to_1st_INI;
+end
+for l = 1:numel(hit_event_times1)
+    hit_event_times(l) = hit_event_times1{l}(1, 1);
 end
 
-for k = 1:numel(miss_trials)
-    miss_event_times(k) = event_times{k}(1, 1);
+for k1 = 1:numel(miss_trials)
+    miss_event_times1{k1} = miss_trials(k1).TDT_state_onsets_aligned_to_1st_INI;
+end
+for k = 1:numel(miss_event_times1)
+    miss_event_times(k) = miss_event_times1{k}(1, 1);
 end
 
-for e = 1:numel(correctrejection_trials)
-    correctrejection_event_times(e) = event_times{e}(1, 1);
+for e1 = 1:numel(correctrejection_trials)
+    correctrejection_event_times1{e1} = correctrejection_trials(e1).TDT_state_onsets_aligned_to_1st_INI;
+end
+for e = 1:numel(correctrejection_event_times1)
+    correctrejection_event_times(e) = correctrejection_event_times1{e}(1, 1);
 end
 
-for r = 1:numel(falsealarm_trials)
-    falsealarm_event_times(r) = event_times{r}(1, 1);
+for r1 = 1:numel(falsealarm_trials)
+    falsealarm_event_times1{r1} = falsealarm_trials(r1).TDT_state_onsets_aligned_to_1st_INI;
+end
+for r = 1:numel(falsealarm_event_times1)
+    falsealarm_event_times(r) = falsealarm_event_times1{r}(1, 1);
 end
 for l = 1:size(blockId,1)
     n(l) = blockId(l);

@@ -102,7 +102,7 @@ end
 
 numElements = numel(event_times);
 for ne = 1:numElements
-    event_times1(ne) = event_times{ne}(1,4); 
+    event_times1(ne) = event_times{ne}(4,1); 
 end
 
 for q2 = 1:numel(noncompleted_trials_array)
@@ -111,52 +111,50 @@ end
 
 numElements2 = numel(not_event_times1); 
 for ne1 = 1:numElements2
-    not_event_times(ne1) = not_event_times1{ne1}(1,4); 
+    not_event_times(ne1) = not_event_times1{ne1}(4,1); 
 end
 
 for l1 = 1:numel(hit_trials)
     hit_event_times1{l1} = hit_trials(l1).TDT_state_onsets_aligned_to_1st_INI;
 end
 for l = 1:numel(hit_event_times1)
-    hit_event_times(l) = hit_event_times1{l}(1, 4);
+    hit_event_times(l) = hit_event_times1{l}(4,1);
 end
 
 for k1 = 1:numel(miss_trials)
     miss_event_times1{k1} = miss_trials(k1).TDT_state_onsets_aligned_to_1st_INI;
 end
 for k = 1:numel(miss_event_times1)
-    miss_event_times(k) = miss_event_times1{k}(1, 4);
+    miss_event_times(k) = miss_event_times1{k}(4,1);
 end
 
 for e1 = 1:numel(correctrejection_trials)
     correctrejection_event_times1{e1} = correctrejection_trials(e1).TDT_state_onsets_aligned_to_1st_INI;
 end
 for e = 1:numel(correctrejection_event_times1)
-    correctrejection_event_times(e) = correctrejection_event_times1{e}(1, 4);
+    correctrejection_event_times(e) = correctrejection_event_times1{e}(4,1);
 end
 
 for r1 = 1:numel(falsealarm_trials)
     falsealarm_event_times1{r1} = falsealarm_trials(r1).TDT_state_onsets_aligned_to_1st_INI;
 end
 for r = 1:numel(falsealarm_event_times1)
-    falsealarm_event_times(r) = falsealarm_event_times1{r}(1, 4);
+    falsealarm_event_times(r) = falsealarm_event_times1{r}(4,1);
 end
-R2R_t2 = cell(size(blockId, 1), 1);
-R2R_valid2 = cell(size(blockId, 1), 1);
-ecgCycleDurations2 = cell(size(blockId, 1), 1);
+
+eventTimesNorm2 = cell(size(blockId, 1), 1);
+not_eventTimesNorm2 = cell(size(blockId, 1), 1);
+hit_eventTimesNorm2 = cell(size(blockId, 1), 1);
+miss_eventTimesNorm2 = cell(size(blockId, 1), 1);
+falsealarm_eventTimesNorm2 = cell(size(blockId, 1), 1);
+correctrejection_eventTimesNorm2 = cell(size(blockId, 1), 1);
+
 for l = 1:size(blockId,1)
     n(l) = blockId(l);
     idx = n(l);
-ecgCycleDurations1 = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
-R2R_t1 = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
-R2R_valid1 = [ecg.out(idx).R2R_valid(ecg.out(idx).idx_valid_R2R_consec)];
-R2R_t2{l} = R2R_t1;
-R2R_valid2{l} = R2R_valid1;
-ecgCycleDurations2{l} = ecgCycleDurations1;
-end
-R2R_t = [R2R_t2{:}];
-R2R_valid = [R2R_valid2{:}];
-ecgCycleDurations = [ecgCycleDurations2{:}];
+ecgCycleDurations = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
+R2R_t = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
+R2R_valid = [ecg.out(idx).R2R_valid(ecg.out(idx).idx_valid_R2R_consec)];
 numCycles = length(ecgCycleDurations);
 for m = 1:numCycles
     cycleStart = R2R_t(m)- R2R_valid(m);
@@ -174,8 +172,21 @@ for m = 1:numCycles
     falsealarm_eventTimesNorm((falsealarm_event_times >= cycleStart) & (falsealarm_event_times < cycleEnd)) = (falsealarm_eventTimesCycle - cycleStart) / cycleDuration;
     correctrejection_eventTimesCycle = correctrejection_event_times((correctrejection_event_times >= cycleStart) & (correctrejection_event_times < cycleEnd));
     correctrejection_eventTimesNorm((correctrejection_event_times >= cycleStart) & (correctrejection_event_times < cycleEnd)) = (correctrejection_eventTimesCycle - cycleStart) / cycleDuration;
-
 end
+   eventTimesNorm2 = [eventTimesNorm2; eventTimesNorm];
+   not_eventTimesNorm2 = [not_eventTimesNorm2; not_eventTimesNorm];
+   hit_eventTimesNorm2 = [hit_eventTimesNorm2; hit_eventTimesNorm];
+   miss_eventTimesNorm2 = [miss_eventTimesNorm2; miss_eventTimesNorm];
+   falsealarm_eventTimesNorm2 = [falsealarm_eventTimesNorm2; falsealarm_eventTimesNorm];
+   correctrejection_eventTimesNorm2 = [correctrejection_eventTimesNorm2; correctrejection_eventTimesNorm];
+end
+eventTimesNorm1 = [eventTimesNorm2{:}];
+not_eventTimesNorm1 = [not_eventTimesNorm2{:}];
+miss_eventTimesNorm1 = [miss_eventTimesNorm2{:}];
+hit_eventTimesNorm1 = [hit_eventTimesNorm2{:}];
+falsealarm_eventTimesNorm1 = [falsealarm_eventTimesNorm2{:}];
+correctrejection_eventTimesNorm1 = [correctrejection_eventTimesNorm2{:}];
+
 hit_eventPhase = 2*pi*hit_eventTimesNorm;
 miss_eventPhase = 2*pi*miss_eventTimesNorm;
 falsealarm_eventPhase = 2*pi*falsealarm_eventTimesNorm;
@@ -183,12 +194,12 @@ correctrejection_eventPhase = 2*pi*correctrejection_eventTimesNorm;
 eventPhase = 2*pi*eventTimesNorm;
 not_eventPhase = 2*pi*not_eventTimesNorm;
 
-hit_eventPhase = mod(hit_eventPhase, 2*pi);
-miss_eventPhase = mod(miss_eventPhase, 2*pi);
-falsealarm_eventPhase = mod(falsealarm_eventPhase, 2*pi);
-correctrejection_eventPhase = mod(correctrejection_eventPhase, 2*pi);
-eventPhase = mod(eventPhase, 2*pi);
-not_eventPhase = mod(not_eventPhase, 2*pi);
+% hit_eventPhase = mod(hit_eventPhase, 2*pi);
+% miss_eventPhase = mod(miss_eventPhase, 2*pi);
+% falsealarm_eventPhase = mod(falsealarm_eventPhase, 2*pi);
+% correctrejection_eventPhase = mod(correctrejection_eventPhase, 2*pi);
+% eventPhase = mod(eventPhase, 2*pi);
+% not_eventPhase = mod(not_eventPhase, 2*pi);
 
 hit_eventPhase_cell{end+1} = hit_eventPhase;
 miss_eventPhase_cell{end+1} = miss_eventPhase; 

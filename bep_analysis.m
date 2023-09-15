@@ -105,11 +105,20 @@ for ne = 1:numElements
     event_times1(ne) = event_times{ne}(4,1); 
 end
 
-for q2 = 1:numel(noncompleted_trials_array)
-    not_event_times1{q2} = noncompleted_trials_array(q2).TDT_state_onsets_aligned_to_1st_INI;
+structures_with_4s = {};
+for idx1 = 1:numel(noncompleted_trials_array)
+    if any(noncompleted_trials_array(idx1).TDT_states == 4)
+        structures_with_4s{end+1} = noncompleted_trials_array(idx1);
+    end
 end
 
-numElements2 = numel(not_event_times1); 
+not_event_times1 = cell(1, numel(structures_with_4s)); 
+
+for q2 = 1:numel(structures_with_4s)
+    not_event_times1{q2} = structures_with_4s{q2}.TDT_state_onsets_aligned_to_1st_INI; 
+end
+
+numElements2 = numel(structures_with_4s); 
 for ne1 = 1:numElements2
     not_event_times(ne1) = not_event_times1{ne1}(4,1); 
 end

@@ -26,12 +26,12 @@ all_correctrejection_eventMeanPhases_deg = [];
 all_falsealarm_eventMeanPhases_deg = [];
 all_eventMeanPhases_deg = [];
 all_not_eventMeanPhases_deg = [];
-eventPhase_alldates = [];
-not_eventPhase_alldates = [];
-hit_eventPhase_alldates = [];
-miss_eventPhase_alldates = [];
-falsealarm_eventPhase_alldates = [];
-correctrejection_eventPhase_alldates = [];
+eventPhase_alldates = cell(1, numDates);
+not_eventPhase_alldates = cell(1, numDates);
+hit_eventPhase_alldates = cell(1, numDates);
+miss_eventPhase_alldates = cell(1, numDates);
+falsealarm_eventPhase_alldates = cell(1, numDates);
+correctrejection_eventPhase_alldates = cell(1, numDates);
 % loading files
 a = 'Y:\Projects\Pulv_bodysignal\Magnus_SDT\';
     for num = 1:numDates 
@@ -43,6 +43,8 @@ filePattern = [a 'Magcombined' dateString2 '*.mat'];
 fileList = dir(filePattern);
 numFiles = numel(fileList);
 Magcombined = cell(1, numFiles);
+clear falsealarm_times correctrejection_times hit_times miss_times completed_times not_event_times i
+clear hit_trials_cell miss_trials_cell falsealarm_trials_cell correctrejection_trials_cell 
 for i = 1:numFiles
     names{i} = fileList(i).name;
     loadedData = load([fileList(i).name]);
@@ -108,55 +110,43 @@ end
 for l = 1:size(blockId,1)
     n(l) = blockId(l);
     idx = n(l);
-eventTimesNorm = cell(size(blockId, 1), 1);
-not_eventTimesNorm = cell(size(blockId, 1), 1);
-hit_eventTimesNorm = cell(size(blockId, 1), 1);
-miss_eventTimesNorm = cell(size(blockId, 1), 1);
-falsealarm_eventTimesNorm = cell(size(blockId, 1), 1);
-correctrejection_eventTimesNorm = cell(size(blockId, 1), 1);
 ecgCycleDurations = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
 R2R_t = [ecg.out(idx).R2R_t(ecg.out(idx).idx_valid_R2R_consec)];
 R2R_valid = [ecg.out(idx).R2R_valid(ecg.out(idx).idx_valid_R2R_consec)];
 numCycles = length(ecgCycleDurations);
 for m = 1:numCycles
-    cycleStart = R2R_t(m)- R2R_valid(m);
-    cycleEnd = R2R_t(m);
-    cycleDuration = cycleEnd - cycleStart;
-    eventTimesCycle = completed_times{1,l}((completed_times{1,l} >= cycleStart) & (completed_times{1,l} < cycleEnd));
-    eventTimesNorm{l}((completed_times{1,l} >= cycleStart) & (completed_times{1,l} < cycleEnd)) = (eventTimesCycle - cycleStart) / cycleDuration;
-    not_eventTimesCycle = not_event_times{l}((not_event_times{l} >= cycleStart) & (not_event_times{l} < cycleEnd));
-    not_eventTimesNorm{l}((not_event_times{l} >= cycleStart) & (not_event_times{l} < cycleEnd)) = (not_eventTimesCycle - cycleStart) / cycleDuration;
-    hit_eventTimesCycle =  hit_times{l}(( hit_times{l} >= cycleStart) & ( hit_times{l} < cycleEnd));
-    hit_eventTimesNorm{l}((hit_times{l} >= cycleStart) & (hit_times{l} < cycleEnd)) = (hit_eventTimesCycle - cycleStart) / cycleDuration;
-    miss_eventTimesCycle = miss_times{l}((miss_times{l} >= cycleStart) & (miss_times{l} < cycleEnd));
-    miss_eventTimesNorm{l}((miss_times{l} >= cycleStart) & (miss_times{l} < cycleEnd)) = (miss_eventTimesCycle - cycleStart) / cycleDuration;
-    falsealarm_eventTimesCycle = falsealarm_times{l}((falsealarm_times{l} >= cycleStart) & (falsealarm_times{l} < cycleEnd));
-    falsealarm_eventTimesNorm{l}((falsealarm_times{l} >= cycleStart) & (falsealarm_times{l} < cycleEnd)) = (falsealarm_eventTimesCycle - cycleStart) / cycleDuration;
-    correctrejection_eventTimesCycle = correctrejection_times{l}((correctrejection_times{l} >= cycleStart) & (correctrejection_times{l} < cycleEnd));
-    correctrejection_eventTimesNorm{l}((correctrejection_times{l} >= cycleStart) & (correctrejection_times{l} < cycleEnd)) = (correctrejection_eventTimesCycle - cycleStart) / cycleDuration;
-
+    cycleStart(m) = R2R_t(m)- R2R_valid(m);
+    cycleEnd(m) = R2R_t(m);
 end
-hit_eventPhase{l} = 2*pi*hit_eventTimesNorm{l};
-miss_eventPhase{l} = 2*pi*miss_eventTimesNorm{l};
-falsealarm_eventPhase{l} = 2*pi*falsealarm_eventTimesNorm{l};
-correctrejection_eventPhase{l} = 2*pi*correctrejection_eventTimesNorm{l};
-eventPhase{l} = 2*pi*eventTimesNorm{l};
-not_eventPhase{l} = 2*pi*not_eventTimesNorm{l};
+eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, completed_times{1,l});
+not_eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, not_event_times{1,l});
+hit_eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, hit_times{1,l});
+miss_eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, miss_times{1,l});
+falsealarm_eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, falsealarm_times{1,l});
+correctrejection_eventPhase{l} = DAG_eventPhase(cycleStart, cycleEnd, correctrejection_times{1,l});
 
-eventPhase_all = horzcat(eventPhase{:});
-not_eventPhase_all = horzcat(not_eventPhase{:});   
-hit_eventPhase_all = horzcat(hit_eventPhase{:});
-miss_eventPhase_all = horzcat(miss_eventPhase{:});
-falsealarm_eventPhase_all = horzcat(falsealarm_eventPhase{:});
-correctrejection_eventPhase_all = horzcat(correctrejection_eventPhase{:});
+eventPhase_all = vertcat(eventPhase{:});
+not_eventPhase_all = vertcat(not_eventPhase{:});   
+hit_eventPhase_all = vertcat(hit_eventPhase{:});
+miss_eventPhase_all = vertcat(miss_eventPhase{:});
+falsealarm_eventPhase_all = vertcat(falsealarm_eventPhase{:});
+correctrejection_eventPhase_all = vertcat(correctrejection_eventPhase{:});
+
+eventPhase_alldates{num} = eventPhase_all;
+not_eventPhase_alldates{num} = not_eventPhase_all;
+hit_eventPhase_alldates{num} = hit_eventPhase_all;
+miss_eventPhase_alldates{num} = miss_eventPhase_all;
+falsealarm_eventPhase_alldates{num} = falsealarm_eventPhase_all;
+correctrejection_eventPhase_alldates{num} = correctrejection_eventPhase_all;
+end 
 
 
-hit_eventMeanPhase_session = circ_mean(hit_eventPhase_all');
-miss_eventMeanPhase_session = circ_mean(miss_eventPhase_all');
-falsealarm_eventMeanPhase_session = circ_mean(falsealarm_eventPhase_all');
-correctrejection_eventMeanPhase_session = circ_mean(correctrejection_eventPhase_all');
-eventMeanPhase_session = circ_mean(eventPhase_all');
-not_eventMeanPhase_session = circ_mean(not_eventPhase_all');
+hit_eventMeanPhase_session = circ_mean(hit_eventPhase_all);
+miss_eventMeanPhase_session = circ_mean(miss_eventPhase_all);
+falsealarm_eventMeanPhase_session = circ_mean(falsealarm_eventPhase_all);
+correctrejection_eventMeanPhase_session = circ_mean(correctrejection_eventPhase_all);
+eventMeanPhase_session = circ_mean(eventPhase_all);
+not_eventMeanPhase_session = circ_mean(not_eventPhase_all);
 
 hit_eventMeanPhase_session(hit_eventMeanPhase_session < 0) = hit_eventMeanPhase_session(hit_eventMeanPhase_session < 0) + 2*pi;
 miss_eventMeanPhase_session(miss_eventMeanPhase_session < 0) = miss_eventMeanPhase_session(miss_eventMeanPhase_session < 0) + 2*pi;
@@ -172,29 +162,34 @@ correctrejection_eventMeanPhase_deg_session = correctrejection_eventMeanPhase_se
 eventMeanPhase_deg_session = eventMeanPhase_session * (180/pi);
 not_eventMeanPhase_deg_session = not_eventMeanPhase_session * (180/pi);
 
-end
+all_hit_eventMeanPhases1{num} =  hit_eventMeanPhase_session;
+all_miss_eventMeanPhases1{num} =  miss_eventMeanPhase_session;
+all_correctrejection_eventMeanPhases1{num} =  correctrejection_eventMeanPhase_session;
+all_falsealarm_eventMeanPhases1{num} = falsealarm_eventMeanPhase_session;
+all_eventMeanPhases1{num} = eventMeanPhase_session;
+all_not_eventMeanPhases1{num} = not_eventMeanPhase_session;
 
-eventPhase_alldates{num} = eventPhase_all;
-not_eventPhase_alldates{num} = not_eventPhase_all;
-hit_eventPhase_alldates{num} = hit_eventPhase_all;
-miss_eventPhase_alldates{num} = miss_eventPhase_all;
-falsealarm_eventPhase_alldates{num} = falsealarm_eventPhase_all;
-correctrejection_eventPhase_alldates{num} = correctrejection_eventPhase_all;
-
-all_hit_eventMeanPhases = [all_hit_eventMeanPhases; hit_eventMeanPhase_session];
-all_miss_eventMeanPhases = [all_miss_eventMeanPhases; miss_eventMeanPhase_session];
-all_correctrejection_eventMeanPhases = [all_correctrejection_eventMeanPhases; correctrejection_eventMeanPhase_session];
-all_falsealarm_eventMeanPhases = [all_falsealarm_eventMeanPhases; falsealarm_eventMeanPhase_session];
-all_eventMeanPhases = [all_eventMeanPhases; eventMeanPhase_session];
-all_not_eventMeanPhases = [all_not_eventMeanPhases; not_eventMeanPhase_session];
-    
-all_hit_eventMeanPhases_deg = [all_hit_eventMeanPhases_deg; hit_eventMeanPhase_deg_session];
-all_miss_eventMeanPhases_deg = [all_miss_eventMeanPhases_deg; miss_eventMeanPhase_deg_session];
-all_correctrejection_eventMeanPhases_deg = [all_correctrejection_eventMeanPhases_deg; correctrejection_eventMeanPhase_deg_session];
-all_falsealarm_eventMeanPhases_deg = [all_falsealarm_eventMeanPhases_deg; falsealarm_eventMeanPhase_deg_session];
-all_eventMeanPhases_deg = [all_eventMeanPhases_deg; eventMeanPhase_deg_session];
-all_not_eventMeanPhases_deg = [all_not_eventMeanPhases_deg; not_eventMeanPhase_deg_session];
+all_hit_eventMeanPhases_deg1{num} =  hit_eventMeanPhase_deg_session;
+all_miss_eventMeanPhases_deg1{num} = miss_eventMeanPhase_deg_session;
+all_correctrejection_eventMeanPhases_deg1{num} = correctrejection_eventMeanPhase_deg_session;
+all_falsealarm_eventMeanPhases_deg1{num} =  falsealarm_eventMeanPhase_deg_session;
+all_eventMeanPhases_deg1{num} = eventMeanPhase_deg_session;
+all_not_eventMeanPhases_deg1{num} = not_eventMeanPhase_deg_session;
         end    
+all_eventMeanPhases_deg = vertcat( all_eventMeanPhases_deg1{:});  
+all_not_eventMeanPhases_deg = vertcat( all_not_eventMeanPhases_deg1{:});  
+all_miss_eventMeanPhases_deg = vertcat( all_miss_eventMeanPhases_deg1{:});  
+all_correctrejection_eventMeanPhases_deg = vertcat( all_correctrejection_eventMeanPhases_deg1{:});  
+all_falsealarm_eventMeanPhases_deg = vertcat( all_falsealarm_eventMeanPhases_deg1{:});  
+all_hit_eventMeanPhases_deg = vertcat( all_hit_eventMeanPhases_deg1{:});  
+
+all_eventMeanPhases = vertcat( all_eventMeanPhases1{:});  
+all_not_eventMeanPhases = vertcat( all_not_eventMeanPhases1{:});  
+all_miss_eventMeanPhases = vertcat( all_miss_eventMeanPhases1{:});  
+all_correctrejection_eventMeanPhases = vertcat( all_correctrejection_eventMeanPhases1{:});  
+all_falsealarm_eventMeanPhases = vertcat( all_falsealarm_eventMeanPhases1{:});  
+all_hit_eventMeanPhases = vertcat( all_hit_eventMeanPhases1{:});  
+
 circ_otest1_sessions = circ_rtest(all_hit_eventMeanPhases);
 circ_otest2_sessions = circ_rtest(all_miss_eventMeanPhases);
 circ_otest3_sessions = circ_rtest(all_correctrejection_eventMeanPhases);
@@ -305,40 +300,40 @@ disp(circ_otest5_sessions);
 disp('All Not Completed R-tests for sessions:');
 disp(circ_otest6_sessions);
 
-eventPhase_alldates1 = horzcat(eventPhase_alldates{:});
-not_eventPhase_alldates1 = horzcat(not_eventPhase_alldates{:});   
-hit_eventPhase_alldates1 = horzcat(hit_eventPhase_alldates{:});
-miss_eventPhase_alldates1 = horzcat(miss_eventPhase_alldates{:});
-falsealarm_eventPhase_alldates1 = horzcat(falsealarm_eventPhase_alldates{:});
-correctrejection_eventPhase_alldates1 = horzcat(correctrejection_eventPhase_alldates{:});
+eventPhase_alldates1 = vertcat(eventPhase_alldates{:});
+not_eventPhase_alldates1 = vertcat(not_eventPhase_alldates{:});   
+hit_eventPhase_alldates1 = vertcat(hit_eventPhase_alldates{:});
+miss_eventPhase_alldates1 = vertcat(miss_eventPhase_alldates{:});
+falsealarm_eventPhase_alldates1 = vertcat(falsealarm_eventPhase_alldates{:});
+correctrejection_eventPhase_alldates1 = vertcat(correctrejection_eventPhase_alldates{:});
 
-hit_eventMeanPhase = circ_mean(hit_eventPhase_alldates1');
-hit_mean_length = circ_r(hit_eventPhase_alldates1')*100;
+hit_eventMeanPhase = circ_mean(hit_eventPhase_alldates1);
+hit_mean_length = circ_r(hit_eventPhase_alldates1)*100;
 hit_x_end = hit_mean_length * cos(hit_eventMeanPhase);
 hit_y_end = hit_mean_length * sin(hit_eventMeanPhase);
 
-miss_eventMeanPhase = circ_mean(miss_eventPhase_alldates1');
-miss_mean_length = circ_r(miss_eventPhase_alldates1')*100;
+miss_eventMeanPhase = circ_mean(miss_eventPhase_alldates1);
+miss_mean_length = circ_r(miss_eventPhase_alldates1)*100;
 miss_x_end = miss_mean_length * cos(miss_eventMeanPhase);
 miss_y_end = miss_mean_length * sin(miss_eventMeanPhase);
 
-falsealarm_eventMeanPhase = circ_mean(falsealarm_eventPhase_alldates1');
-falsealarm_mean_length = circ_r(falsealarm_eventPhase_alldates1')*100;
+falsealarm_eventMeanPhase = circ_mean(falsealarm_eventPhase_alldates1);
+falsealarm_mean_length = circ_r(falsealarm_eventPhase_alldates1)*100;
 falsealarm_x_end = falsealarm_mean_length * cos(falsealarm_eventMeanPhase);
 falsealarm_y_end = falsealarm_mean_length * sin(falsealarm_eventMeanPhase);
 
-correctrejection_eventMeanPhase = circ_mean(correctrejection_eventPhase_alldates1');
-correctrejection_mean_length = circ_r(correctrejection_eventPhase_alldates1')*100;
+correctrejection_eventMeanPhase = circ_mean(correctrejection_eventPhase_alldates1);
+correctrejection_mean_length = circ_r(correctrejection_eventPhase_alldates1)*100;
 correctrejection_x_end = correctrejection_mean_length * cos(correctrejection_eventMeanPhase);
 correctrejection_y_end = correctrejection_mean_length * sin(correctrejection_eventMeanPhase);
 
-eventMeanPhase = circ_mean(eventPhase_alldates1');
-mean_length = circ_r(eventPhase_alldates1')*100;
+eventMeanPhase = circ_mean(eventPhase_alldates1);
+mean_length = circ_r(eventPhase_alldates1)*100;
 x_end = mean_length * cos(eventMeanPhase);
 y_end = mean_length * sin(eventMeanPhase);
 
-not_eventMeanPhase = circ_mean(not_eventPhase_alldates1');
-not_mean_length = circ_r(not_eventPhase_alldates1')*100;
+not_eventMeanPhase = circ_mean(not_eventPhase_alldates1);
+not_mean_length = circ_r(not_eventPhase_alldates1)*100;
 not_x_end = not_mean_length * cos(not_eventMeanPhase);
 not_y_end = not_mean_length * sin(not_eventMeanPhase);
 

@@ -43,8 +43,9 @@ filePattern = [a 'Magcombined' dateString2 '*.mat'];
 fileList = dir(filePattern);
 numFiles = numel(fileList);
 Magcombined = cell(1, numFiles);
-clear falsealarm_times correctrejection_times hit_times miss_times completed_times not_event_times i
-clear hit_trials_cell miss_trials_cell falsealarm_trials_cell correctrejection_trials_cell 
+clear falsealarm_times correctrejection_times hit_times miss_times completed_times not_event_times i completed_trials
+clear hit_trials_cell miss_trials_cell falsealarm_trials_cell correctrejection_trials_cell n eventPhase not_eventPhase hit_eventPhase miss_eventPhase falsealarm_eventPhase correctrejection_eventPhase
+ 
 for i = 1:numFiles
     names{i} = fileList(i).name;
     loadedData = load([fileList(i).name]);
